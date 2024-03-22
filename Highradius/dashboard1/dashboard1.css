@@ -1,0 +1,36 @@
+.container {
+  display: flex;
+  width: 100%;
+  height: auto;
+}
+
+.chart1{
+  width: 55%;
+  height:400px;
+}
+
+.chart2 {
+  width: 55%;
+  height:390px;
+}
+
+.container11 {
+  display: flex;
+  width: 100%;
+  height: auto;
+}
+
+.chart3 {
+  width: 50%;
+  height: 320px;
+}
+
+.chart4 {
+  width: 25%;
+  height: 320px;
+}
+
+.chart5 {
+  width: 25%;
+  height: 320px;
+}

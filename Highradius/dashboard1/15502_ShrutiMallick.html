@@ -1,0 +1,645 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard 1</title>
+    <script src="https://code.highcharts.com/highcharts.js"></script>
+    <script src="https://code.highcharts.com/modules/exporting.js"></script>
+    <script src="https://code.highcharts.com/modules/accessibility.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crossfilter2/1.4.7/crossfilter.min.js"></script>
+    <script src="dataset.js"></script>
+    <style>
+        .container {
+            display: flex;
+            width: 100%;
+            height: auto;
+        }
+
+        .chart1{
+            width: 55%;
+            height:400px;
+        }
+
+        .chart2 {
+            width: 55%;
+            height:390px;
+        }
+
+        .container11 {
+            display: flex;
+            width: 100%;
+            height: auto;
+        }
+
+        .chart3 {
+            width: 50%;
+            height: 320px;
+        }
+
+        .chart4 {
+            width: 25%;
+            height: 320px;
+        }
+
+        .chart5 {
+            width: 25%;
+            height: 320px;
+        }
+
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="chart1" id="container1"></div>
+        <div class="chart2" id="container2"></div>
+    </div>
+    <div class="container11">
+        <div class="chart3" id="container3"></div>
+        <div class="chart4" id="container4"></div>
+        <div class="chart5" id="container5"></div>
+    </div>
+        
+    <script>
+
+                var data = crossfilter(dataset);
+
+                var data_dim1 = data.dimension(d => d.carrier);
+                var data_group1 = data_dim1.group().reduceSum(d => d.count);
+
+                var data_dim2= data.dimension(d => d.monthDate);
+                var data_group2 = data_dim2.group().reduceSum(d => d.count); 
+
+                var data_dim3 = data.dimension(d => d.error_sub_type);
+                var data_group3 = data_dim3.group().reduceSum(d => d.count);
+
+                var data_dim4 = data.dimension(d => d.aggregation_type);
+                var data_group4 = data_dim4.group().reduceSum(d => d.count);
+
+                var data_dim5 = data.dimension(d => d.error_type);
+                var data_group5 = data_dim5.group().reduceSum(d => d.count);
+
+                var months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+
+                function DataForChart1(groups) {
+                    var categories = [];
+                    var data = [];
+                    var gdata = groups.all();
+                    gdata.forEach(d => {
+                        categories.push(d.key);
+                        data.push(d.value);
+                    });
+                    return{
+                        categories:categories,
+                        data:data
+                    }
+                }
+
+
+                var tempObject1 = DataForChart1(data_group1);
+
+                var tempObject2 = DataForChart1(data_group2);
+
+                var tempObject3 = DataForChart1(data_group3);
+
+                var tempObject4 = DataForChart1(data_group4);
+
+                var tempObject5 = DataForChart1(data_group5);
+
+                /*highchart-1*/
+                var options1 = {
+                    chart : {
+                        renderTo : 'container1',
+                        type : 'bar',
+                        zoomType: 'xy'
+                    },
+                    title : {
+                        text : 'Test Carrier Chart'
+                    },
+                    subtitle : {
+                        text : '15502',
+                        style: {
+                            color: '#627BE7',
+                            fontWeight:'bold'
+                        }                        
+                    },
+                    xAxis : {
+                        title :{
+                            text: 'Carrier'
+                        },
+                        categories : tempObject1.categories
+                    },
+                    yAxis :{
+                        min: 0,
+                        title: {
+                            text: 'count',
+                        },
+                        tickInterval: 200*1000
+                    },
+                    legend: {
+                        enabled: false
+                    },
+                    tooltip: {
+                        valueSuffix: ' $'
+                    },
+                    plotOptions: {
+                        bar: {
+                            dataLabels: {
+                                enabled: true
+                            }
+                        },
+                        series: {
+                            point: {
+                                events: {
+                                    click: function() {
+                                        this.select(null,true);
+                                        var selectedPoints1 = this.series.chart.getSelectedPoints();
+                                        //console.log(selectedPoints1);
+
+                                        var filteredPoints1=[];
+                                        for (let index = 0; index <selectedPoints1.length; index++) {
+                                            filteredPoints1.push(selectedPoints1[index].category);
+                                            
+                                        }
+
+                                        function multivalue_filter1(values){
+                                            return function(v){
+                                                return values.indexOf(v) != -1;
+                                            }
+                                        }
+
+                                        if(filteredPoints1.length>0){
+                                            data_dim1.filterFunction(multivalue_filter1(filteredPoints1));
+                                        } else data_dim1.filterAll();
+
+                                        var newData2 = DataForChart1(data_group2);
+                                        var newData21 = DataForChart1(data_group3);
+                                        var newData22 = DataForChart1(data_group4);
+                                        var newData23 = DataForChart1(data_group5);
+
+                                        chart2.xAxis[0].setCategories(newData2.categories);
+                                        chart2.series[0].setData(newData2.data);
+                                        chart3.xAxis[0].setCategories(newData21.categories);
+                                        chart3.series[0].setData(newData21.data);
+                                        chart4.xAxis[0].setCategories(newData22.categories);
+                                        chart4.series[0].setData(newData22.data);
+                                        chart5.xAxis[0].setCategories(newData23.categories);
+                                        chart5.series[0].setData(newData23.data);
+                                        
+                                        
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    credits: {
+                        enabled: false
+                    },
+                    series : [{
+                        name : 'Carrier Chart',
+                        data : tempObject1.data,
+                        color: '#7DEFFF'
+                    }]
+                }
+
+                /*highchart-2*/
+                var options2 = {
+                    chart : {
+                        renderTo : 'container2',
+                        type : 'column',
+                        zoomType: 'xy'
+                    },
+                    title : {
+                        text : 'Count By month'
+                    },
+                    subtitle : {
+                        text : '15502',
+                        style: {
+                                color: '#627BE7',
+                                fontWeight:'bold'
+                        }
+                    },
+                    xAxis : {
+                        title : {
+                            text: 'month'
+                        },
+                        //type:'datetime',
+                        categories : tempObject2.categories,
+                        labels: {
+                            formatter: function () {
+                                var date = new Date(this.value);
+                                return months[date.getMonth()] + '-'+date.getFullYear().toString().substr(-2);
+                            }
+                        }
+                    },
+                    yAxis :{
+                        min: 0,
+                        title: {
+                            text: 'counts',
+                        },
+                        labels: {
+                            overflow: 'justify'
+                        }
+                    },
+                    legend: {
+                        enabled: false
+                    },
+                    tooltip: {
+                        valueSuffix: ' $'
+                    },
+                    plotOptions: {
+                        column: {
+                            dataLabels: {
+                                enabled: true
+                            }
+                        },
+                        series: {
+                            point: {
+                                events: {
+                                    click: function() {
+                                        this.select(null,true);
+                                        var selectedPoints = this.series.chart.getSelectedPoints();
+                                        //console.log(selectedPoints);
+
+                                        var filteredPoints=[];
+                                        for (let index = 0; index <selectedPoints.length; index++) {
+                                            filteredPoints.push(selectedPoints[index].category);
+                                            
+                                        }
+
+                                        function multivalue_filter(values){
+                                            return function(v){
+                                                return values.indexOf(v) != -1;
+                                            }
+                                        }
+
+                                        if(filteredPoints.length>0){
+                                            data_dim2.filterFunction(multivalue_filter(filteredPoints));
+                                        } else data_dim2.filterAll();
+
+                                        var newData1 = DataForChart1(data_group1);
+                                        var newData11 = DataForChart1(data_group3);
+                                        var newData12 = DataForChart1(data_group4);
+                                        var newData13 = DataForChart1(data_group5);
+
+
+                                        chart1.xAxis[0].setCategories(newData1.categories);
+                                        chart1.series[0].setData(newData1.data);
+                                        chart3.xAxis[0].setCategories(newData11.categories);
+                                        chart3.series[0].setData(newData11.data);
+                                        chart4.xAxis[0].setCategories(newData12.categories);
+                                        chart4.series[0].setData(newData12.data);
+                                        chart5.xAxis[0].setCategories(newData13.categories);
+                                        chart5.series[0].setData(newData13.data);
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    credits: {
+                        enabled: false
+                    },
+                    series : [{
+                        name : 'Month Chart',
+                        data : tempObject2.data,
+                        color: '#5EC3ED'
+                    }]
+                }
+
+                /*highchart3*/
+                var options3 = {
+                    chart : {
+                        renderTo : 'container3',
+                        type : 'bar',
+                        zoomType: 'xy',
+                        events: {
+                            load: function() {
+                                Highcharts.each(this.series[0].points, function(p) {
+                                    if (p.y > 1000*1000) {
+                                        p.update({
+                                            color: 'green'
+                                        });
+                                    }
+                                });
+                            }
+                        }
+                    },
+                    title : {
+                        text : 'Count By Error sub type'
+                    },
+                    subtitle : {
+                        text : '15502',
+                        style: {
+                                color: '#627BE7',
+                                fontWeight:'bold'
+                        }
+                    },
+                    xAxis : {
+                        title : {
+                            text: 'error_sub_type'
+                        },
+                        categories : tempObject3.categories
+                    },
+                    yAxis :{
+                        min: 0,
+                        title: {
+                            text: 'counts',
+                        },
+                        labels:{
+                            overflow: 'justify'
+                        },
+                        tickInterval: 250*1000
+                    },
+                    legend: {
+                        enabled: false
+                    },
+                    tooltip: {
+                        valueSuffix: ' $'
+                    },
+                    plotOptions: {
+                        bar: {
+                            dataLabels: {
+                                enabled: true,
+                                x: 2.5
+                            }
+                        },
+                        series: {
+                            point: {
+                                events: {
+                                    click: function() {
+                                        this.select(null,true);
+                                        var selectedPoints2 = this.series.chart.getSelectedPoints();
+                                        //console.log(selectedPoints);
+
+                                        var filteredPoints2=[];
+                                        for (let index = 0; index <selectedPoints2.length; index++) {
+                                            filteredPoints2.push(selectedPoints2[index].category);
+                                            
+                                        }
+
+                                        function multivalue_filter(values){
+                                            return function(v){
+                                                return values.indexOf(v) != -1;
+                                            }
+                                        }
+
+                                        if(filteredPoints2.length>0){
+                                            data_dim3.filterFunction(multivalue_filter(filteredPoints2));
+                                        } else data_dim3.filterAll();
+
+                                        var newData3 = DataForChart1(data_group1);
+                                        var newData31 = DataForChart1(data_group2);
+                                        var newData32 = DataForChart1(data_group4);
+                                        var newData33 = DataForChart1(data_group5);
+
+                                        chart1.xAxis[0].setCategories(newData3.categories);
+                                        chart1.series[0].setData(newData3.data);
+                                        chart2.xAxis[0].setCategories(newData31.categories);
+                                        chart2.series[0].setData(newData31.data);
+                                        chart4.xAxis[0].setCategories(newData32.categories);
+                                        chart4.series[0].setData(newData32.data);
+                                        chart5.xAxis[0].setCategories(newData33.categories);
+                                        chart5.series[0].setData(newData33.data);
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    credits: {
+                        enabled: false
+                    },
+                    series : [{
+                        name : 'Error Subtype Chart',
+                        data :  tempObject3.data,
+                        color: '#0800DC'
+                    }]
+                }
+
+                /*highchart4*/
+                var options4 = {
+                    chart : {
+                        renderTo : 'container4',
+                        type : 'bar',
+                        zoomType: 'xy'
+                    },
+                    title : {
+                        text : 'Count By aggeragation type'
+                    },
+                    subtitle : {
+                        text : '15502',
+                        style: {
+                                color: '#627BE7',
+                                fontWeight:'bold'
+                        }
+                    },
+                    xAxis : {
+                        title : {
+                            text: 'Aggeragation type'
+                        },
+                        categories : tempObject4.categories
+                    },
+                    yAxis :{
+                        min: 0,
+                        title: {
+                            text: 'counts',
+                        },
+                        labels:{
+                            overflow: 'justify'
+                        },
+                        tickInterval: 500*1000
+                    },
+                    legend: {
+                        enabled: false
+                    },
+                    tooltip: {
+                        valueSuffix: ' $'
+                    },
+                    plotOptions: {
+                        bar: {
+                            dataLabels: {
+                                enabled: true,
+                                align : 'right',
+                                x : -100,
+                                color: '#FFFFFF'
+
+                            }
+                        },
+                        series: {
+                            point: {
+                                events: {
+                                    click: function() {
+                                        this.select(null,true);
+                                        var selectedPoints3 = this.series.chart.getSelectedPoints();
+                                        //console.log(selectedPoints);
+
+                                        var filteredPoints3=[];
+                                        for (let index = 0; index <selectedPoints3.length; index++) {
+                                            filteredPoints3.push(selectedPoints3[index].category);
+                                            
+                                        }
+
+                                        function multivalue_filter(values){
+                                            return function(v){
+                                                return values.indexOf(v) != -1;
+                                            }
+                                        }
+
+                                        if(filteredPoints3.length>0){
+                                            data_dim4.filterFunction(multivalue_filter(filteredPoints3));
+                                        } else data_dim4.filterAll();
+
+                                        var newData4 = DataForChart1(data_group1);
+                                        var newData41 = DataForChart1(data_group2);
+                                        var newData42 = DataForChart1(data_group3);
+                                        var newData43 = DataForChart1(data_group5);
+
+                                        chart1.xAxis[0].setCategories(newData4.categories);
+                                        chart1.series[0].setData(newData4.data);
+                                        chart2.xAxis[0].setCategories(newData41.categories);
+                                        chart2.series[0].setData(newData41.data);
+                                        chart3.xAxis[0].setCategories(newData42.categories);
+                                        chart3.series[0].setData(newData42.data);
+                                        chart5.xAxis[0].setCategories(newData43.categories);
+                                        chart5.series[0].setData(newData43.data);
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    credits: {
+                        enabled: false
+                    },
+                    series : [{
+                        name : 'Aggegation Chart',
+                        data : tempObject4.data,
+                        color: '#FFA500'
+                    }]
+                }
+
+                /*highchart5*/
+                var options5 = {
+                    chart : {
+                        renderTo : 'container5',
+                        type : 'bar',
+                        zoomType: 'xy',
+                        events: {
+                            load: function() {
+                                Highcharts.each(this.series[0].points, function(p) {
+                                    if (p.y > 1000*1000) {
+                                        p.update({
+                                            color: 'green'
+                                        });
+                                    }
+                                });
+                            }
+                        }
+                    },
+                    title : {
+                        text : 'Count By error type'
+                    },
+                    subtitle : {
+                        text : '15502',
+                        style: {
+                                color: '#627BE7',
+                                fontWeight:'bold'
+                        }
+                    },
+                    xAxis : {
+                        title : {
+                            text: 'Error_type'
+                        },
+                        categories : tempObject5.categories
+                    },
+                    yAxis :{
+                        min: 0,
+                        title: {
+                            text: 'counts',
+                        },
+                        labels:{
+                            overflow: 'justify'
+                        },
+                        tickInterval: 500*1000
+                    },
+                    legend: {
+                        enabled: false
+                    },
+                    tooltip: {
+                        valueSuffix: ' $'
+                    },
+                    plotOptions: {
+                        bar: {
+                            dataLabels: {
+                                enabled: true,
+                                //align : 'left',
+                                x : 6,
+
+                            }
+                        },
+                        series: {
+                            point: {
+                                events: {
+                                    click: function() {
+                                        this.select(null,true);
+                                        var selectedPoints4 = this.series.chart.getSelectedPoints();
+                                        //console.log(selectedPoints);
+
+                                        var filteredPoints4=[];
+                                        for (let index = 0; index <selectedPoints4.length; index++) {
+                                            filteredPoints4.push(selectedPoints4[index].category);
+                                            
+                                        }
+
+                                        function multivalue_filter(values){
+                                            return function(v){
+                                                return values.indexOf(v) != -1;
+                                            }
+                                        }
+
+                                        if(filteredPoints4.length>0){
+                                            data_dim5.filterFunction(multivalue_filter(filteredPoints4));
+                                        } else data_dim5.filterAll();
+
+                                        var newData5 = DataForChart1(data_group1);
+                                        var newData51 = DataForChart1(data_group2);
+                                        var newData52 = DataForChart1(data_group3);
+                                        var newData53 = DataForChart1(data_group4);
+
+                                        chart1.xAxis[0].setCategories(newData5.categories);
+                                        chart1.series[0].setData(newData5.data);
+                                        chart2.xAxis[0].setCategories(newData51.categories);
+                                        chart2.series[0].setData(newData51.data);
+                                        chart3.xAxis[0].setCategories(newData52.categories);
+                                        chart3.series[0].setData(newData52.data);
+                                        chart4.xAxis[0].setCategories(newData53.categories);
+                                        chart4.series[0].setData(newData53.data);
+                                        
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    credits: {
+                        enabled: false
+                    },
+                    series : [{
+                        name : 'Error Chart',
+                        color: 'grey',
+                        data : tempObject5.data,          
+                          
+                        
+                    }]
+                }
+
+                var chart1 = new Highcharts.chart(options1);
+                var chart2 = new Highcharts.chart(options2);
+                var chart3 = new Highcharts.chart(options3);
+                var chart4 = new Highcharts.chart(options4);
+                var chart5 = new Highcharts.chart(options5);
+
+
+        </script>
+    
+</body>
+</html>
